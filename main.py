@@ -7,6 +7,7 @@ import os
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+print("🔌 Conectado a Supabase")
 
 # 2. Limpiar la tabla existente
 supabase.table("Races").delete().gt("id", 0).execute()
@@ -15,11 +16,17 @@ supabase.table("Races").delete().gt("id", 0).execute()
 BASE_URL = "https://clubdecorredores.com"
 url = f"{BASE_URL}/carreras/"
 response = requests.get(url)
+if response.status_code == 200:
+    print("✅ Página cargada correctamente")
+else:
+    print(f"❌ Error al cargar página. Status code: {response.status_code}")
+
 soup = BeautifulSoup(response.text, "html.parser")
 
 # 4. Buscar cada card de carrera
-target_class = "col-xs-12 col-sm-6 col-md-4 col-lg-3 cajaIndividual element-item c1"
-cards = soup.find_all("div", class_=lambda c: c and " ".join(c) == target_class)
+target_substring = "col-xs-12 col-sm-6 col-md-4 col-lg-3 cajaIndividual element-item c1"
+cards = soup.find_all("div", class_=lambda c: c and isinstance(c, list) and target_substring in " ".join(c))
+print(f"🔍 Se encontraron {len(cards)} cards de carreras")
 
 for card in cards:
     try:
@@ -50,6 +57,8 @@ for card in cards:
             if len(ps) >= 2:
                 lugar = ps[1].get_text(strip=True)
 
+        print(f"📦 Procesando {index+1}: {name} | {date} | {lugar} | {distancias}")
+
         # Insertar en Supabase
         supabase.table("Races").insert({
             "name": name,
@@ -59,6 +68,8 @@ for card in cards:
             "banner": banner,
             "registrationLink": registrationLink
         }).execute()
+
+        print(f"✅ Insertado correctamente: {insert_response}")
 
     except Exception as e:
         print(f"⚠️ Error al procesar una carrera: {e}")
