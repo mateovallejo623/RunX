@@ -41,7 +41,7 @@ for index, card in enumerate(cards):
 
         # Link de inscripción
         registration_tag = card.find_parent("a")
-        registrationLink = BASE_URL + registration_tag["href"] if registration_tag and registration_tag.has_attr("href") else ""
+        registrationLink = registration_tag["href"] if registration_tag and registration_tag.has_attr("href") else ""
 
         # Nombre de la carrera
         name_tag = card.find("div", class_="tituloC")
