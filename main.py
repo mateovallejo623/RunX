@@ -9,7 +9,7 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # 2. Limpiar la tabla existente
-supabase.table("Races").delete().execute()
+supabase.table("Races").delete().gt("id", 0).execute()
 
 # 3. Scrapeo desde la web
 BASE_URL = "https://clubdecorredores.com"
