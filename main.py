@@ -29,7 +29,7 @@ else:
 soup = BeautifulSoup(response.text, "html.parser")
 
 # 4. Buscar cada card de carrera
-target_substring = "col-xs-12 col-sm-6 col-md-4 col-lg-3 cajaIndividual element-item c1"
+target_substring = "col-xs-12 col-sm-6 col-md-4 col-lg-3 cajaIndividual element-item"
 cards = soup.findcards = soup.find_all("div", class_=lambda c: c and target_substring in " ".join(c if isinstance(c, list) else [c]))
 print(f"🔍 Se encontraron {len(cards)} cards de carreras")
 
