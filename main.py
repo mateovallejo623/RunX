@@ -64,6 +64,9 @@ for index, card in enumerate(cards):
 
         print(f"📦 Procesando {index+1}: {name} | {date} | {lugar} | {distancias}")
 
+    except Exception as e:
+        print(f"⚠️ Error al procesar una carrera: {e}")
+
         # Insertar en Supabase
         supabase.table("Races").insert({
             "name": name,
@@ -76,5 +79,58 @@ for index, card in enumerate(cards):
 
         print(f"✅ Insertado correctamente: {insert_response}")
 
-    except Exception as e:
-        print(f"⚠️ Error al procesar una carrera: {e}")
+BASE_URL2 = "https://www.corro.com.ar"
+url2 = f"{BASE_URL2}/carreras/"
+headers2 = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+}
+response2 = requests.get(url2, headers=headers2)
+
+STEP = 8
+MAX_START = 24  
+
+for start in range(0, MAX_START + 1, STEP):
+    # Armar la URL según el índice
+    url = f"{url2}?start={start}" if start > 0 else f"{url2}?limitstart=0"
+    print(f"\n🔗 Scrapeando: {url}")
+
+    response2 = requests.get(url, headers=headers2)
+    if response2.status_code != 200:
+        print(f"❌ Error al cargar {url}")
+        continue
+
+    soup = BeautifulSoup(response2.text, "html.parser")
+
+    # Buscar cards
+    cards = soup.find_all("div", class_=lambda c: c and "itemContainer col-sm-6" in c)
+    print(f"✅ Se encontraron {len(cards)} cards en {url}")
+
+    for idx, card in enumerate(cards):
+        try:
+            print(f"\n📦 Procesando card #{idx + 1}")
+
+            # Banner
+            img_tag = card.find("img")
+            banner = BASE_URL2 + img_tag["src"] if img_tag and img_tag.has_attr("src") else ""
+
+            # <strong> tags: 0 = name, 1 = date, 2 = location, 4 = distances
+            strongs = card.find_all("strong")
+            name = strongs[0].get_text(strip=True) if len(strongs) > 0 else ""
+            date = strongs[1].get_text(strip=True) if len(strongs) > 1 else ""
+            location = strongs[2].get_text(strip=True) if len(strongs) > 2 else ""
+            distances = strongs[4].get_text(strip=True) if len(strongs) > 4 else ""
+
+            print(f"🏁 {name} | 📅 {date} | 📍 {location} | 🏃 {distances}")
+
+            # Subir a Supabase
+            supabase.table("Races").insert({
+                "name": name,
+                "date": date,
+                "location": location,
+                "distances": distances,
+                "banner": banner,
+                "registrationLink": url
+            }).execute()
+
+        except Exception as e:
+            print(f"⚠️ Error al procesar una carrera: {e}")
