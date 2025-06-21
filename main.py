@@ -113,10 +113,14 @@ for start in range(0, MAX_START + 1, STEP):
 
             # <strong> tags: 0 = name, 1 = date, 2 = location, 4 = distances
             strongs = card.find_all("strong")
-            name = strongs[0].get_text(strip=True) if len(strongs) > 0 else ""
-            date = strongs[1].get_text(strip=True) if len(strongs) > 1 else ""
-            location = strongs[2].get_text(strip=True) if len(strongs) > 2 else ""
-            distances = strongs[4].get_text(strip=True) if len(strongs) > 4 else ""
+
+            def clean(text):
+                return text.split(":", 1)[1].strip() if ":" in text else text.strip()
+
+            name = clean(strongs[0].get_text()) if len(strongs) > 0 else ""
+            date = clean(strongs[1].get_text()) if len(strongs) > 1 else ""
+            location = clean(strongs[2].get_text()) if len(strongs) > 2 else ""
+            distances = clean(strongs[4].get_text()) if len(strongs) > 4 else ""
 
             print(f"🏁 {name} | 📅 {date} | 📍 {location} | 🏃 {distances}")
 
