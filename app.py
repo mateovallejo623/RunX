@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 import openai
 import os
+from main import scrapeo
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
@@ -50,6 +51,18 @@ Mensaje del usuario:
 
     except Exception as e:
         return {"error": str(e)}
+
+
+@app.post("/scrap")
+async def run_scraping(x_api_key: str = Header(None)):
+    # Comparar la clave recibida con la de entorno
+    expected_key = os.environ.get("SCRAPER_API_KEY")
+
+    if x_api_key != expected_key:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    resultado = scrapeo()
+    return {"mensaje": resultado}
     
 if __name__ == "__main__":
     import uvicorn
