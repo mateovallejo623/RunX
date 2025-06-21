@@ -64,10 +64,7 @@ for index, card in enumerate(cards):
 
         print(f"📦 Procesando {index+1}: {name} | {date} | {lugar} | {distancias}")
 
-    except Exception as e:
-        print(f"⚠️ Error al procesar una carrera: {e}")
-
-        # Insertar en Supabase
+            # Insertar en Supabase
         supabase.table("Races").insert({
             "name": name,
             "date": date,
@@ -77,7 +74,8 @@ for index, card in enumerate(cards):
             "registrationLink": registrationLink
         }).execute()
 
-        print(f"✅ Insertado correctamente: {insert_response}")
+    except Exception as e:
+        print(f"⚠️ Error al procesar una carrera: {e}")
 
 BASE_URL2 = "https://www.corro.com.ar"
 url2 = f"{BASE_URL2}/carreras/"
