@@ -1,9 +1,19 @@
 from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 import os
 from scraper.main import scrapeo
 from bot.plan import generar_plan
 
 app = FastAPI()
+
+# 🚨 Agregá esto para habilitar CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://preview--runx-race-ready.lovable.app"],  # Reemplazá "*" por el dominio del front en producción
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/scrap")
 async def run_scraping(x_api_key: str = Header(None)):
