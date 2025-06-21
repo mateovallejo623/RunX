@@ -1,7 +1,7 @@
-import openai
+from openai import OpenAI
 import os
 
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 def generar_plan(data):
     carrera = data.get("carrera", "")
@@ -24,9 +24,11 @@ Mensaje del usuario:
 Respondé de forma profesional y clara con consejos realistas y personalizados.
 """
 
-    completion = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": prompt}]
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
     )
 
-    return completion.choices[0].message.content
+    return response.choices[0].message.content
