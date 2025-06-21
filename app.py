@@ -16,7 +16,7 @@ async def run_scraping(x_api_key: str = Header(None)):
 @app.post("/plan")
 async def handle_plan(request: Request):
     data = await request.json()
-    respuesta = await generar_plan(data)
+    respuesta = generar_plan(data)
     return {"respuesta": respuesta}
 
 if __name__ == "__main__":
