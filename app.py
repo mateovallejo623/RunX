@@ -1,12 +1,12 @@
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import os
 import psycopg2
 import bcrypt
 from scraper.main import scrapeo
 from bot.plan import generar_plan
-from fastapi.responses import JSONResponse
 
 # --- DB CONNECTION ---
 conn = psycopg2.connect(
@@ -39,6 +39,7 @@ async def preflight_handler():
 class RegisterUser(BaseModel):
     email: str
     password: str
+    name: str
 
 class LoginUser(BaseModel):
     email: str
@@ -47,15 +48,15 @@ class LoginUser(BaseModel):
 # --- RUTA: Registro ---
 @app.post("/auth/register")
 def register(user: RegisterUser):
-    cursor.execute("SELECT id FROM users WHERE email = %s", (user.email,))
+    cursor.execute("SELECT id FROM User WHERE email = %s", (user.email,))
     if cursor.fetchone():
         raise HTTPException(status_code=400, detail="Email ya registrado")
 
     hashed_pw = bcrypt.hashpw(user.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
     cursor.execute(
-        "INSERT INTO users (email, password_hash) VALUES (%s, %s) RETURNING id",
-        (user.email, hashed_pw)
+        "INSERT INTO User (email, pass, name) VALUES (%s, %s, %s) RETURNING id",
+        (user.email, hashed_pw, user.name)
     )
     user_id = cursor.fetchone()[0]
     return {"message": "Usuario registrado correctamente", "user_id": user_id}
@@ -63,13 +64,13 @@ def register(user: RegisterUser):
 # --- RUTA: Login ---
 @app.post("/auth/login")
 def login(user: LoginUser):
-    cursor.execute("SELECT id, password_hash FROM users WHERE email = %s", (user.email,))
+    cursor.execute("SELECT id, pass FROM User WHERE email = %s", (user.email,))
     result = cursor.fetchone()
     if not result:
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
 
-    user_id, password_hash = result
-    if not bcrypt.checkpw(user.password.encode("utf-8"), password_hash.encode("utf-8")):
+    user_id, hashed_pw = result
+    if not bcrypt.checkpw(user.password.encode("utf-8"), hashed_pw.encode("utf-8")):
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
 
     return {"message": "Login exitoso", "user_id": user_id}
