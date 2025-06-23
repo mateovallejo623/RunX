@@ -8,10 +8,6 @@ from scraper.main import scrapeo
 from bot.plan import generar_plan
 from fastapi.responses import JSONResponse
 
-@app.options("/{rest_of_path:path}")
-async def preflight_handler():
-    return JSONResponse(content={"ok": True})
-
 # --- DB CONNECTION ---
 conn = psycopg2.connect(
     host=os.getenv("SUPABASE_DB_HOST"),
@@ -34,6 +30,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.options("/{rest_of_path:path}")
+async def preflight_handler():
+    return JSONResponse(content={"ok": True})
 
 # --- SCHEMAS ---
 class RegisterUser(BaseModel):
