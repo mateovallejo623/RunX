@@ -6,6 +6,11 @@ import psycopg2
 import bcrypt
 from scraper.main import scrapeo
 from bot.plan import generar_plan
+from fastapi.responses import JSONResponse
+
+@app.options("/{rest_of_path:path}")
+async def preflight_handler():
+    return JSONResponse(content={"ok": True})
 
 # --- DB CONNECTION ---
 conn = psycopg2.connect(
