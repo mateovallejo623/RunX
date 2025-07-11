@@ -158,7 +158,8 @@ def scrapeo():
         "MuiPaper-outlined",
         "MuiPaper-rounded",
         "MuiCard-root",
-        "css-wipnya"
+        "css-wipnya",
+        "MuiTypography"
     ]
     cards3 = soup3.find_all(lambda tag: tag.name == "div" and tiene_clases(tag, clases_card))
     print(f"🔍 Se encontraron {len(cards3)} cards en Esfuerzo Deportivo SR")
