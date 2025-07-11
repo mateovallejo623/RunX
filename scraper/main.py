@@ -137,4 +137,52 @@ def scrapeo():
 
             except Exception as e:
                     print(f"⚠️ Error al procesar una carrera: {e}")
+    # 5. Scrapeo de https://esfuerzodeportivosr.com.ar/Carreras
+    BASE_URL3 = "https://esfuerzodeportivosr.com.ar"
+    url3 = f"{BASE_URL3}/Carreras"
+    headers3 = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    }
+    response3 = requests.get(url3, headers=headers3)
+    if response3.status_code == 200:
+        print("✅ Página de Esfuerzo Deportivo SR cargada correctamente")
+    else:
+        print(f"❌ Error al cargar página Esfuerzo Deportivo SR. Status code: {response3.status_code}")
+    soup3 = BeautifulSoup(response3.text, "html.parser")
+    cards3 = soup3.find_all(
+        "div",
+        class_="MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-wipnya"
+    )
+    print(f"🔍 Se encontraron {len(cards3)} cards en Esfuerzo Deportivo SR")
+    for idx, card in enumerate(cards3):
+        try:
+            # Imagen
+            img_tag = card.find("img")
+            img_url = img_tag["src"] if img_tag and img_tag.has_attr("src") else ""
+            if img_url and not img_url.startswith("http"):
+                img_url = BASE_URL3 + img_url
+            # Título
+            title_tag = card.find(
+                "h5",
+                class_="MuiTypography-root MuiTypography-h5 MuiTypography-alignLeft css-td3q96"
+            )
+            title = title_tag.get_text(strip=True) if title_tag else ""
+            # Fecha
+            date_tag = card.find(
+                "p",
+                class_="MuiTypography-root MuiTypography-body2 MuiTypography-alignLeft css-bx40an"
+            )
+            date = date_tag.get_text(strip=True) if date_tag else ""
+            print(f"🏁 {title} | 📅 {date} | 🖼️ {img_url}")
+            # Subir a Supabase
+            supabase.table("Races").insert({
+                "name": title,
+                "date": date,
+                "location": "",
+                "distances": "",
+                "banner": img_url,
+                "registrationLink": url3
+            }).execute()
+        except Exception as e:
+            print(f"⚠️ Error al procesar una carrera de Esfuerzo Deportivo SR: {e}")
     return "✅ Scrap completado exitosamente."
