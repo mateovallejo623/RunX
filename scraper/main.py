@@ -149,11 +149,22 @@ def scrapeo():
     else:
         print(f"❌ Error al cargar página Esfuerzo Deportivo SR. Status code: {response3.status_code}")
     soup3 = BeautifulSoup(response3.text, "html.parser")
-    cards3 = soup3.find_all(
-        "div",
-        class_="MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root css-wipnya"
-    )
+    # Usar un chequeo de clases más robusto
+    def tiene_clases(tag, clases_requeridas):
+        tag_classes = tag.get("class", [])
+        return all(c in tag_classes for c in clases_requeridas)
+    clases_card = [
+        "MuiPaper-root",
+        "MuiPaper-outlined",
+        "MuiPaper-rounded",
+        "MuiCard-root",
+        "css-wipnya"
+    ]
+    cards3 = soup3.find_all(lambda tag: tag.name == "div" and tiene_clases(tag, clases_card))
     print(f"🔍 Se encontraron {len(cards3)} cards en Esfuerzo Deportivo SR")
+    if not cards3:
+        print("❗ No se encontraron cards. Mostrando un fragmento del HTML para depuración:")
+        print(soup3.prettify()[:1000])
     for idx, card in enumerate(cards3):
         try:
             # Imagen
